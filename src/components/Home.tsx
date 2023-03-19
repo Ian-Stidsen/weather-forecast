@@ -1,9 +1,8 @@
 
 
-export function Today() {
+export function Home() {
   return (
     <>
-      
     </>
   )
 }

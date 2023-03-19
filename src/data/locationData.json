@@ -1,0 +1,14 @@
+{
+  "greenland": {
+    "latitude": "69.6354163",
+    "longitude": "-42.1736914"
+  },
+  "denmark": {
+    "latitude": "55.9396761",
+    "longitude": "9.5155848"
+  },
+  "usa": {
+    "latitude": "37.6",
+    "longitude": "-95.665"
+  }
+}

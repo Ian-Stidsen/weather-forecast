@@ -1,7 +1,10 @@
+import { Home } from "./Home";
 
 
 export function Hourly() {
   return (
-    <h1>Hourly</h1>
+    <>
+      <Home />
+    </>
   )
 }
