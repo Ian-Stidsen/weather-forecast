@@ -1,8 +1,9 @@
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
-import { Button, ButtonGroup, Col, FormGroup, InputGroup, Row } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Button, ButtonGroup, Col, InputGroup, Row, Table } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import { PageLayout } from "../components/PageLayout";
 import { fetchWeatherData } from "../data/fetchWeatherData";
+import Styles from "../styles/Weather.module.css";
 
 interface Weather {
   description: string,
@@ -39,13 +40,14 @@ interface ApiResponse {
 }
 
 export function Weather() {
-  const [inputValue, setInputValue] = useState<string>('');
+  const [searchInputValue, setSearchInputValue] = useState<string>('');
   const [currentLocation, setCurrentLocation] = useState<string>('');
-  const unitRef = useRef<HTMLSelectElement | any>({});
+  const unitRef = useRef<HTMLSelectElement | any>('metric');
+  const [unitOfMeasurement, setUnitOfMeasurement] = useState<string>('metric');
   const [weatherView, setWeatherView] = useState<string>('current');
 
   const [rawData, setRawData] = useState<ApiResponse | {}>({});
-  const [formattedData, setFormattedData] = useState<WeatherView[] | WeatherView>([]);
+  const [formattedData, setFormattedData] = useState<WeatherView[] | []>([]);
 
   function handleSearch(cityName: string) {
     if (cityName === '') {
@@ -53,65 +55,139 @@ export function Weather() {
       return;
     }
     
-    setInputValue('');
+    setSearchInputValue('');
     
     fetchWeatherData(cityName, unitRef.current!.value)
     .then(data => {
       setRawData(data);
       setCurrentLocation(cityName);
-      console.log(cityName)
       })
       .catch((error) => {
-        console.log(error);
-        alert('An error occurred while fetching weather data.');
+        alert('An error occurred while fetching weather data. Check the console for details.');
+        throw new Error(error);
       });
   };
 
-  const formatWeather = (weatherViewOption: string) => {
-    setWeatherView(weatherViewOption);
-    const weatherData = rawData[weatherViewOption as keyof typeof rawData];
-    setFormattedData(weatherData);
+  const formatWeatherData = (weatherViewOption: string) => {
+    const currentWeatherView = weatherViewOption == null? weatherView : weatherViewOption;
+    setWeatherView(currentWeatherView);
+    const weatherData = rawData[currentWeatherView as keyof typeof rawData];
+    if (weatherData === undefined) return;
+    weatherViewOption === 'current'? setFormattedData([weatherData]) : setFormattedData(weatherData);
   }
 
   useEffect(() => {
-    formatWeather(weatherView);
+    formatWeatherData(weatherView);
   }, [rawData])
+
+  const measurementUnits = {
+    metric: {
+      temp: '°C',
+      wind_speed: 'm/s',
+    }
+    ,
+    imperial: {
+      temp: '°F',
+      wind_speed: 'mph',
+    }
+  }
+
+  const displayWeather = () => {
+    if (formattedData.length === 0) return null;
+    
+    return (
+      <Table>
+        <thead>
+          <tr>
+            {weatherView !== 'current'? <th>Time</th> : null}
+            <th>Temperature</th>
+            <th>Feels Like</th>
+            <th>Wind Speed</th>
+            <th>Weather</th>
+          </tr>
+        </thead>
+        <tbody>
+            {formattedData && formattedData.length > 0? (
+              formattedData.map((value, index) => {
+                const degreesSymbols = measurementUnits[unitOfMeasurement as keyof typeof measurementUnits].temp;
+                const windSpeedSymbols = measurementUnits[unitOfMeasurement as keyof typeof measurementUnits].wind_speed;
+
+                const currentDate = new Date();
+                const hour = currentDate.getHours() + index;
+                const day = currentDate.getDate() + index;
+                const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day, hour);
+
+                if (weatherView === 'daily') {
+                  const time = ['morn', 'day', 'eve', 'night'];
+                  const timeText = ['Morning', 'Day', 'Evening', 'Night'];
+                  const result = time.map((time, i) => {
+                    return (
+                      <tr key={`${index}.${i}`}>
+                        <td>{`${date.getDate()}, ${timeText[i]}`}</td>
+                        <td>{`${value.temp[time as keyof typeof value.temp]} ${degreesSymbols}`}</td>
+                        <td>{`${value.feels_like[time as keyof typeof value.temp]} ${degreesSymbols}`}</td>
+                        <td>{`${value.wind_speed} ${windSpeedSymbols}`}</td>
+                        <td>{value.weather[0].description}</td>
+                      </tr>
+                    )
+                  })
+                  return result;
+                } else {
+                  return (
+                    <tr key={index}>
+                      {weatherView !== 'current'? <td>{date.getHours()}</td> : null}
+                      <td>{`${value.temp} ${degreesSymbols}`}</td>
+                      <td>{`${value.feels_like} ${degreesSymbols}`}</td>
+                      <td>{`${value.wind_speed} ${windSpeedSymbols}`}</td>
+                      <td>{value.weather[0].description}</td>
+                    </tr>
+                  )
+                }
+              })) : (
+                <tr>
+                  <td>No data available</td>
+                </tr>
+              )
+            }
+        </tbody>
+      </Table>
+    )
+  }
 
   return (
     <>
       <PageLayout>
         <Row>
-          <Col>
-            <InputGroup>
 
-              <InputGroup.Text>
-                <Form.Floating>
+          <InputGroup>
 
-                  <Form.Control
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={e => {
-                      e.key === "Enter"? handleSearch(inputValue) : null;
-                    }}
-                    placeholder=" "
-                  />
-                  <Form.Label htmlFor="searchLocation">City</Form.Label>
+            <InputGroup.Text>
+              <Form.Floating>
 
-                </Form.Floating>
-              </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  value={searchInputValue}
+                  onChange={(e) => setSearchInputValue(e.target.value)}
+                  onKeyDown={e => {
+                    e.key === "Enter"? handleSearch(searchInputValue) : null;
+                  }}
+                  placeholder=" "
+                />
+                <Form.Label htmlFor="searchLocation">City</Form.Label>
 
-              <Button variant="outline-secondary" onClick={e => handleSearch(inputValue)}>Search</Button>
-            </InputGroup>
+              </Form.Floating>
+            </InputGroup.Text>
 
-          </Col>
+            <Button variant="outline-secondary" onClick={e => handleSearch(searchInputValue)}>Search</Button>
+          </InputGroup>
+
         </Row>
         <Row>
           <Col>
             <ButtonGroup>
-              <Button variant="dark" onClick={e => formatWeather('current')}>Today</Button>
-              <Button variant="dark" onClick={e => formatWeather('hourly')}>Hourly</Button>
-              <Button variant="dark" onClick={e => formatWeather('daily')}>Daily</Button>
+              <Button variant="dark" onClick={e => formatWeatherData('current')}>Today</Button>
+              <Button variant="dark" onClick={e => formatWeatherData('hourly')}>Hourly</Button>
+              <Button variant="dark" onClick={e => formatWeatherData('daily')}>Daily</Button>
             </ButtonGroup>
           </Col>
 
@@ -120,22 +196,24 @@ export function Weather() {
               ref={unitRef} 
               defaultValue={'metric'}
               onChange={e => {
+                setUnitOfMeasurement(e.target.value);
                 if (currentLocation === '') return;
                 handleSearch(currentLocation)
               }}
             >
-              <option value="metric">Celsius</option>
-              <option value="imperial">Fahrenheit</option>
+              <option value="metric">°C</option>
+              <option value="imperial">°F</option>
             </Form.Select>
           </Col>
         </Row>
         <Row>
           <Col>
               <Button onClick={e => {
-                console.log(rawData);
-                console.log(formattedData);
+                //console.log(rawData);
+                //console.log(Object.values(formattedData));
+                console.log(formattedData)
               }}>test</Button>
-              {weatherView}
+              {displayWeather()}
           </Col>
         </Row>
       </PageLayout>

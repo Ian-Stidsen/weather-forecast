@@ -19,19 +19,3 @@ export async function fetchWeatherData(cityName: string, unit: string): Promise<
 
   return weatherData;
 }
-
-/* type WeatherDataProps = {
-  lat: number,
-  lon: number,
-  unit: string,
-} */
-
-/* export async function fetchWeatherData(lat: number, lon: number, unit: string): Promise<Object> {
-
-  const WEATHER_API_URL = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=${unit}&appid=${WEATHER_API_KEY}`;
-  
-  const response = await fetch(WEATHER_API_URL);
-  const data = await response.json();
-  
-  return data;
-} */
