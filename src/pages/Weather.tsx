@@ -3,7 +3,7 @@ import { Button, ButtonGroup, Col, InputGroup, Row, Table } from "react-bootstra
 import Form from "react-bootstrap/Form";
 import { PageLayout } from "../components/PageLayout";
 import { fetchWeatherData } from "../data/fetchWeatherData";
-import Styles from "../styles/Weather.module.css";
+import styles from "../styles/Weather.module.css";
 
 interface Weather {
   description: string,
@@ -185,9 +185,9 @@ export function Weather() {
         <Row>
           <Col>
             <ButtonGroup>
-              <Button variant="dark" onClick={e => formatWeatherData('current')}>Today</Button>
-              <Button variant="dark" onClick={e => formatWeatherData('hourly')}>Hourly</Button>
-              <Button variant="dark" onClick={e => formatWeatherData('daily')}>Daily</Button>
+              <Button className={weatherView === 'current'? styles.weatherViewBtnActive : ''} variant="dark" onClick={e => formatWeatherData('current')}>Today</Button>
+              <Button className={weatherView === 'hourly'? styles.weatherViewBtnActive : ''} variant="dark" onClick={e => formatWeatherData('hourly')}>Hourly</Button>
+              <Button className={weatherView === 'daily'? styles.weatherViewBtnActive : ''} variant="dark" onClick={e => formatWeatherData('daily')}>Daily</Button>
             </ButtonGroup>
           </Col>
 
@@ -208,11 +208,6 @@ export function Weather() {
         </Row>
         <Row>
           <Col>
-              <Button onClick={e => {
-                //console.log(rawData);
-                //console.log(Object.values(formattedData));
-                console.log(formattedData)
-              }}>test</Button>
               {displayWeather()}
           </Col>
         </Row>

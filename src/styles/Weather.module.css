@@ -1,9 +1,5 @@
 
 
-.weatherViewBtn {
-
-}
-
 .weatherViewBtnActive {
-  background-color: #f5f5f5;
+  background-color: rgb(59, 59, 59);
 }
