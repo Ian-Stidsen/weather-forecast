@@ -2,7 +2,7 @@
 
 export async function fetchWeatherData(cityName: string, unit: string): Promise<Object> {
   const WEATHER_API_KEY = import.meta.env.VITE_REACT_APP_WEATHER_API_KEY;
-  const LOCATION_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${WEATHER_API_KEY}`;
+  const LOCATION_API_URL = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${WEATHER_API_KEY}`;
 
   
   const locationData = await fetch(LOCATION_API_URL)
